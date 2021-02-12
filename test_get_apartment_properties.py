@@ -74,7 +74,7 @@ def test_get_rooms(get_lun_page):
 def test_get_price_per_m(get_lun_page):
     soup = bs(get_lun_page, features='html.parser')
     
-    expected = ['3367 $ за м²' ,'*** error', None]
+    expected = ['3367 $ за м²' , None]
     actual   = get_price_per_m(soup)
     assert  actual in expected
 
@@ -95,14 +95,14 @@ def test_get_area(get_lun_page):
 def test_get_year(get_lun_page):
     soup = bs(get_lun_page, features='html.parser')
     
-    expected = ['2017' ,'*** error', None]
+    expected = ['2013' , None]
     actual   = get_year(soup)
     assert  actual in expected
 
 def test_get_type(get_lun_page):
     soup = bs(get_lun_page, features='html.parser')
     
-    expected = ['монолитно-каркасные' ,'*** error', None]
+    expected = ['утепленная панель', None]
     actual   = get_type(soup)
     assert  actual in expected
 

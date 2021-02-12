@@ -4,11 +4,42 @@ import requests
 import re
 from typing import Union, Dict, List
 from bs4 import BeautifulSoup as bs
-from collections import namedtuple
+# from collections import namedtuple
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+
 
 def get_lun_html(url: str) -> Union[str, None]:
-    r = requests.get(url)
-    return r.text if r.ok else None
+    """получает html страніци по url
+    т.к. страница динамическая, то использует selenium webdriver
+
+    Args:
+        url (str): url страницы
+
+    Returns:
+        Union[str, None]: html страницы или None, при ошибке доступа
+    """
+    
+    # опции webdriver  
+    options = webdriver.ChromeOptions()
+    options.add_argument('--ignore-certificate-errors')
+    options.add_argument('--incognito')
+    options.add_argument('--headless')
+    options.add_argument('--silent')
+    options.add_argument('--log-level=3')
+    
+    try:
+        # открываем webdriver для Chrome с использованием его менеджера
+        driver = webdriver.Chrome(ChromeDriverManager().install(),  options=options)
+        # получаем страницу и выделяем ее текст 
+        driver.get(url)
+        page_source = driver.page_source
+    except:
+        page_source = None
+    
+    driver.quit()
+    
+    return page_source
 
 def get_total_page(html: str) -> Union[str, None]:
     """возвращает количество страниц для парсинга
@@ -145,7 +176,7 @@ def main():
     url = LUN_URL
     lun_html = get_lun_html(LUN_URL)
     if lun_html is None:
-        print (f'ошибка чтения url: {url}')
+        print (f'ошибка доступа к страніце: {url}')
         exit (1)
     
     # получить общее количество страниц с продажей
@@ -159,7 +190,7 @@ def main():
     
     # total_pages = 0
     # проход по всем страницам
-    for i in range(60,61):
+    for i in range(3,5):
     # for i in range(int(total_pages) + 1):
         
         # формируем url страницы
@@ -170,19 +201,18 @@ def main():
         # при ошибке не продолжать 
         aprt_soup_list = find_all_aprts(html)
         if aprt_soup_list is None:
-            print(f'ошибка парсинга страницы: {str(i)}')
+            print(f'ошибка парсинга страницы: {url}')
             continue
-        # print(aprt_soup_list)
         
         # проход по списку квартир и формирование строки выходного файла
         for aprt in aprt_soup_list:
-            pass
-            line =  f'{get_total_price(aprt)},{get_rooms(aprt)},{get_price_per_m(aprt)}'
-            # line += f'{get_level(aprt)},{get_year(aprt)},{get_type(aprt)},{get_area(aprt)},{get_address(aprt)}'
+            line =  f'{get_total_price(aprt)},{get_rooms(aprt)},{get_price_per_m(aprt)},'
+            line += f'{get_level(aprt)},{get_year(aprt)},{get_type(aprt)},{get_area(aprt)},{get_address(aprt)}'
             print(line)
         
         
         
 
 if __name__ == '__main__':
+    
     main()

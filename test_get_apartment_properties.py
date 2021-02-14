@@ -44,7 +44,7 @@ href="/продажа-квартир-киев?page=99">99</a>
 </html>
 """
     
-    return html1.replace('\n', '')
+    return html.replace('\n', '')
     
     
 def test_get_total_page(get_lun_page):
@@ -96,7 +96,7 @@ def test_get_year(get_lun_page):
     soup = bs(get_lun_page, features='html.parser')
     
     expected = ['2013' , None]
-    actual   = get_year(soup)
+    actual   = 'год постройки' + get_year(soup)
     assert  actual in expected
 
 def test_get_type(get_lun_page):

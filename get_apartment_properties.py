@@ -4,7 +4,6 @@ import requests
 import re
 from typing import Union, Dict, List
 from bs4 import BeautifulSoup as bs
-# from collections import namedtuple
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -91,7 +90,7 @@ def get_total_price(soup: bs) -> Union[str, None]:
     try:
         total_price = soup.find('div', class_='realty-preview__price').text
     except:
-        return '*** error'
+        return '*** not found '
     
     return total_price 
 
@@ -102,7 +101,7 @@ def get_rooms(soup: bs) -> Union[str, None]:
     try:
         rooms = soup.find('span', class_='realty-preview__info rooms').text
     except:
-        return '*** error'
+        return '*** not found '
     
     return rooms 
 
@@ -113,7 +112,7 @@ def get_price_per_m(soup:bs) -> Union[str, None]:
     try:
         price_per_m: str = soup.find('div', class_='realty-preview__price--sqm').text
     except:
-        return '*** error'
+        return '*** not found '
     
     return price_per_m 
 
@@ -122,7 +121,7 @@ def get_level(soup:bs) -> Union[str, None]:
     try: 
         level = soup.find('span', text='этаж').next_sibling
     except: 
-        return '*** error'
+        return '*** not found '
     
     return level
 
@@ -130,10 +129,9 @@ def get_year(soup:bs) -> Union[str, None]:
     """возвращает год квартиры
     """
     try: 
-        # от площади идем вверх потом сосед и выбираем техт
-        year = soup.find('span', class_='realty-preview__info area').parent.next_sibling.text
+        year = soup.find_all(class_='realty-content-layout__properties-row')[2].find_all(class_='realty-preview__info')[1].text
     except: 
-        return '*** error'
+        return '*** not found '
     
     return year
 
@@ -141,10 +139,9 @@ def get_type(soup: bs) -> Union[str, None]:
     """возвращает тип квартиры
     """
     try: 
-        # от этажа идем вверх потом сосед и выбираем техт
-        type = soup.find('span', text='этаж').parent.next_sibling.text
+        type = list(soup.find_all(class_='realty-content-layout__properties-row')[3].find_all(class_='realty-preview__info')[1].children)[1]
     except: 
-        return '*** error'
+        return '*** not found '
     
     return type
 
@@ -154,7 +151,7 @@ def get_area(soup:bs) -> Union[str, None]:
     try: 
         area = soup.find('span', class_='realty-preview__info area').text
     except: 
-        return '*** error'
+        return '*** not found '
     
     return area
 
@@ -164,7 +161,7 @@ def get_address(soup:bs) -> Union[str, None]:
     try: 
         area = soup.find('a', class_='realty-preview__title-link').text
     except: 
-        return '*** error'
+        return '*** not found '
     
     return area
 
@@ -190,27 +187,28 @@ def main():
     
     # total_pages = 0
     # проход по всем страницам
-    for i in range(3,5):
-    # for i in range(int(total_pages) + 1):
+    for page in range(70,71):
+    # for page in range(int(total_pages) + 1):
         
         # формируем url страницы
-        url = f'{LUN_URL}?page={str(i)}'
+        url = f'{LUN_URL}?page={str(page)}'
         html = get_lun_html(url)
         
         # получить с текущей страницы soup всех описаний квартир
-        # при ошибке не продолжать 
+        # при ошибке перейти на следующую страницу
+        # TODO сделать генератор "aprt_soup_list"
         aprt_soup_list = find_all_aprts(html)
         if aprt_soup_list is None:
             print(f'ошибка парсинга страницы: {url}')
             continue
         
         # проход по списку квартир и формирование строки выходного файла
-        for aprt in aprt_soup_list:
-            line =  f'{get_total_price(aprt)},{get_rooms(aprt)},{get_price_per_m(aprt)},'
-            line += f'{get_level(aprt)},{get_year(aprt)},{get_type(aprt)},{get_area(aprt)},{get_address(aprt)}'
-            print(line)
-        
-        
+        with open('output.csv', 'a+') as file:
+            for aprt in aprt_soup_list:
+                line =  f'{get_total_price(aprt)},{get_rooms(aprt)},{get_price_per_m(aprt)},'
+                line += f'{get_level(aprt)},{get_year(aprt)},{get_type(aprt)},{get_area(aprt)},{get_address(aprt)}'
+                print(line)
+                file.write(line+'\n')
         
 
 if __name__ == '__main__':

@@ -170,10 +170,9 @@ def get_address(soup:bs) -> Union[str, None]:
 def main():
     
     # получить 1-ю страницу с продажей квартир lun 
-    url = LUN_URL
     lun_html = get_lun_html(LUN_URL)
     if lun_html is None:
-        print (f'ошибка доступа к страніце: {url}')
+        print (f'ошибка доступа к страніце: {LUN_URL}')
         exit (1)
     
     # получить общее количество страниц с продажей
@@ -203,7 +202,7 @@ def main():
             continue
         
         # проход по списку квартир и формирование строки выходного файла
-        with open('output.csv', 'a+') as file:
+        with open('aprts_data.csv', 'a+') as file:
             for aprt in aprt_soup_list:
                 line =  f'{get_total_price(aprt)},{get_rooms(aprt)},{get_price_per_m(aprt)},'
                 line += f'{get_level(aprt)},{get_year(aprt)},{get_type(aprt)},{get_area(aprt)},{get_address(aprt)}'

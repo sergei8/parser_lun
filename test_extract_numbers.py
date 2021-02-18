@@ -1,6 +1,9 @@
 import pytest
 from extract_numbers import \
-    get_total_price
+    get_total_price, \
+    get_romms, \
+    get_price_sqm
+
     
 @pytest.fixture
 def lun_data():
@@ -13,3 +16,15 @@ def test_get_total_price(lun_data):
     expected = [115000, None]
     actual = get_total_price(lun_data)
     assert actual in expected
+    
+def test_get_rooms(lun_data):
+    expected = [2, None]
+    actual = get_romms(lun_data)
+    actual = get_romms(lun_data)
+    assert actual == expected[0]
+    assert actual in expected
+    
+def test_get_price_sqm(lun_data):
+    expected = [1575, None]
+    actual = get_price_sqm(lun_data)
+    assert actual == expected[0]

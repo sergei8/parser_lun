@@ -14,12 +14,13 @@
 # year - год постройки дома
 # rooms_area - список метража комнат
 
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Optional, Tuple
 
 COURSE = 28.0
 NOT_FOUND = '*** not found'
 DOLLAR = '$'
 HRIVNA = 'грн'
+YEAR_OF_BUILD = 'год постройки'
 
 def _get_row_property(line: str, index: int) -> Union[str, None]:
     """выделяет из csv-строки эл-т index порядковый номер эл-та
@@ -41,14 +42,59 @@ def _get_row_property(line: str, index: int) -> Union[str, None]:
     # вернуть эл-т с индексом index
     return row_prop
 
+def _get_level_property(line: str, index: int) -> Union[Tuple[Optional[int], Optional[int]], None]:
+    """выделяет элемент этажей (3) и возвращает кортеж (<этаж>, <этажность>)
+    """
+    # получить эл-т с этажами
+    levels = _get_row_property(line, 3)
+    if levels is None:
+        return None
+    
+    # выполнить преобразования
+    level_str, total_levels_str = levels.split('из')
+    level = int(level_str) if level_str.strip().isnumeric() else None
+    total_levels = int(total_levels_str) if total_levels_str.strip().isnumeric() else None
+    
+    return (level, total_levels)
+        
+def _get_area_property(line: str, index: int) -> \
+    Union[Tuple[Optional[float], Optional[float], Optional[float]], None]:
+    """ возвращает кортеж вида: (<общ.площадь>,<жилая>,<кухня>)
+        там где нету проставляется `None`
+    """
+    # выделим 6-й эл-т с площадями
+    area_str = _get_row_property(line, index)
+    if area_str is None:
+        return None
+    
+    # отсечь м2
+    area_str = area_str.strip('м²')
+    
+    # виделть общую пложадь еслі есть
+    try:
+        total_area_str = area_str.split('/')[0]
+    except IndexError:
+        total_area_str = ''
+    # виделть жилую площадь
+    try:
+        living_area_str = area_str.split('/')[1]
+    except IndexError:
+        living_area_str = ''
+    # выделить пложадь кухни если есть
+    try:
+        kitchen_area_str = area_str.split('/')[2]
+    except IndexError:
+        kitchen_area_str = ''
+
+    # закончіть преобразованіе
+    total_area = float(total_area_str) if total_area_str.strip().isnumeric() else None
+    living_area = float(living_area_str) if living_area_str.strip().isnumeric() else None
+    kitchen_area = float(kitchen_area_str) if kitchen_area_str.strip().isnumeric() else None
+    
+    return (total_area, living_area, kitchen_area)
+
 def get_total_price(line: str) -> Union[float, None]:
     """возвращает цену квартиры как число или None
-
-    Args:
-        line (str): строка файла
-
-    Returns:
-        Union[float, None]: цена
     """
         
     price_str = _get_row_property(line, 0)
@@ -124,6 +170,36 @@ def get_price_sqm(line: str) -> Union[float, None]:
     
     return price_sqm
         
+def get_level(line: str) -> Union[int, None]:
+    """возвращает этаж который есть 0 эл-т кортежа или None
+    """
+    result = _get_level_property(line, 3)
+    
+    return result[0] if result is not None else None
+
+def get_levels(line: str) -> Union[int, None]:
+    """возвращает кол-во этажей который есть 1 эл-т кортежа или None
+    """
+    result = _get_level_property(line, 3)
+    
+    return result[1] if result is not None else None
+    
+def get_year(line: str) -> Union[int, None]: 
+    
+    # выделить эл-т из строки
+    year_str = _get_row_property(line, 4)
+    if year_str is None:
+        return None
+    
+    # выделить год из эл-та (д/б вторым в списке)
+    year_str_list = year_str.strip().split(YEAR_OF_BUILD)
+    try:
+        year = int(year_str_list[1])
+    except:
+        return None
+    
+    return year
+    
 
 def main():
     
@@ -136,7 +212,15 @@ def main():
             total_rooms = get_romms(line)
             # выбрать цену за метр в $
             price_sqm = get_price_sqm(line)
-            # print(total_price, total_rooms, price_sqm)
+            # выбрать этаж
+            level = get_level(line)
+            # выбрвть этажность
+            total_levels = get_levels(line)
+            # выбрать год постройки
+            year = get_year(line)
+            
+            print(total_price, total_rooms, price_sqm, level, total_levels, year)
+            
     
     
 if __name__ == '__main__':

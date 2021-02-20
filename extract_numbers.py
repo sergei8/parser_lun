@@ -6,13 +6,15 @@
 # программа выбирает из lun-файла все числовые показатели с
 # соответствующими преобразованиями
 # 
-# total_price - цена квартиры
-# total_rooms - количество комнат
-# price_sqm - цена за кв.м
-# level - этаж
-# total_levels - этажность дома
-# year - год постройки дома
-# rooms_area - список метража комнат
+# total_price       - цена квартиры в $
+# total_rooms       - количество комнат
+# price_sqm         - цена за кв.м в $
+# level             - этаж
+# total_levels      - этажность дома
+# year              - год постройки дома
+# total_area        - общая площадь
+# living_area       - жилая площадь
+# kitchen_area      - площадь кухни
 
 from typing import List, Union, Dict, Optional, Tuple
 
@@ -46,14 +48,30 @@ def _get_level_property(line: str, index: int) -> Union[Tuple[Optional[int], Opt
     """выделяет элемент этажей (3) и возвращает кортеж (<этаж>, <этажность>)
     """
     # получить эл-т с этажами
-    levels = _get_row_property(line, 3)
+    levels = _get_row_property(line, index)
     if levels is None:
         return None
     
+    level: Optional[int] = None
+    total_levels: Optional[int] = None
+    
     # выполнить преобразования
-    level_str, total_levels_str = levels.split('из')
-    level = int(level_str) if level_str.strip().isnumeric() else None
-    total_levels = int(total_levels_str) if total_levels_str.strip().isnumeric() else None
+    try:
+        level_str, total_levels_str = levels.split('из')
+    except:
+        return None
+    
+    try:
+        level = int(level_str) 
+    except:
+        # level останется None
+        pass
+    
+    try:
+        total_levels = int(total_levels_str)
+    except:
+        # total_levels останется None
+        pass
     
     return (level, total_levels)
         
@@ -120,7 +138,7 @@ def get_total_price(line: str) -> Union[float, None]:
     if price_list[-1] == 'грн': 
         price_number = round(price_number / COURSE, 1)
         
-    return price_number
+    return round(price_number,1)
     
 def get_romms(line: str) -> Union[int, None]: 
     """возвращает общее число комнат в квартире
@@ -168,7 +186,7 @@ def get_price_sqm(line: str) -> Union[float, None]:
         # что-то пошло не так
         return None
     
-    return price_sqm
+    return round(price_sqm, 1)
         
 def get_level(line: str) -> Union[int, None]:
     """возвращает этаж который есть 0 эл-т кортежа или None
@@ -203,24 +221,39 @@ def get_year(line: str) -> Union[int, None]:
 
 def main():
     
-    with open('aprts_data.csv') as file:
-        # читать файл данных построчно
-        for line in file:
+    with open('aprts_data.csv')        as input_file, \
+         open('numeric_data.csv', 'w') as output_file:
+        
+        # читать исходный файл данных построчно
+        for line in input_file:
+            
             # выбрать цену квартиры
             total_price = get_total_price(line)
+            
             # вибрать чісло комнат
             total_rooms = get_romms(line)
+            
             # выбрать цену за метр в $
             price_sqm = get_price_sqm(line)
+            
             # выбрать этаж
             level = get_level(line)
+            
             # выбрвть этажность
             total_levels = get_levels(line)
+            
             # выбрать год постройки
             year = get_year(line)
             
-            print(total_price, total_rooms, price_sqm, level, total_levels, year)
+            # выбрать площади из _get_area_property
+            total_area, living_area, kitchen_area = _get_area_property(line, 6)
             
+            output_line =  f'{total_price},{total_rooms},{price_sqm},{level},{total_levels},'
+            output_line += f'{year},{total_area},{living_area},{kitchen_area}'
+                
+            print(output_line)
+            
+            output_file.write(output_line + '\n')
     
     
 if __name__ == '__main__':

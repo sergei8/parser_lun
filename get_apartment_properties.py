@@ -186,7 +186,7 @@ def main():
     
     # total_pages = 0
     # проход по всем страницам
-    for page in range(70,71):
+    for page in range(0,30):
     # for page in range(int(total_pages) + 1):
         
         # формируем url страницы

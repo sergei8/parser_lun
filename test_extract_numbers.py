@@ -17,7 +17,7 @@ def lun_data():
 """
 
 def test_get_total_price(lun_data):
-    expected = [115000, None]
+    expected = [115000.0, None]
     actual = get_total_price(lun_data)
     assert actual in expected
     
@@ -35,7 +35,7 @@ def test_get_price_sqm(lun_data):
     
 def test_get_level_property(lun_data):
     expected = [(21, 25), None]
-    actual = _get_level_property(lun_data)
+    actual = _get_level_property(lun_data, 3)
     assert actual in expected
     
 def test_get_level(lun_data):
@@ -52,5 +52,4 @@ def test_get_year(lun_data):
 def test_get_area_property(lun_data):
     expected = [(73.0, 37.0, 15.0), None]
     actual = _get_area_property(lun_data, 6)
-    # assert actual == (73.0, 37.0, None)
     assert actual in expected

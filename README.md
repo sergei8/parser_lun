@@ -1,2 +1,2 @@
 # parser_lun
-Парсер https://flatfy.lun.ua/продажа-квартир-киев
+__get_apartment_property__ - парсер https://flatfy.lun.ua/продажа-квартир-киев

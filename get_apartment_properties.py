@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @Date    : 2021-02-25 22:42:04
 # @Author  : Serhii Shkliarskiy 
-# @Version : 1.0.0
+# @Version : 1.1.0
 
 LUN_URL = 'https://flatfy.lun.ua/продажа-квартир-киев'
 RAW_DATA_FILE = 'aprts_data.csv'

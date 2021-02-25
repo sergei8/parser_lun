@@ -2,7 +2,7 @@ import pytest
 from bs4 import BeautifulSoup as bs
 
 from get_apartment_properties import \
-    get_total_page, \
+    NOT_FOUND, get_total_page, \
     find_all_aprts, \
     get_total_price, \
     get_rooms, \
@@ -11,7 +11,9 @@ from get_apartment_properties import \
     get_area, \
     get_year, \
     get_type, \
-    get_address
+    get_address, \
+    get_publish_date, \
+    NOT_FOUND
     
 LUN_URL = 'https://flatfy.lun.ua/продажа-квартир-киев'
 
@@ -53,21 +55,21 @@ def test_get_total_page(get_lun_page):
     assert  actual in expected
     
 def test_find_all_aprts(get_lun_page):
-    expected = [1 ,'*** error', None]
+    expected = [1 , NOT_FOUND, None]
     actual   = len(find_all_aprts(get_lun_page))
     assert actual in expected
     
 def test_get_total_price(get_lun_page):
     soup = bs(get_lun_page, features='html.parser')
     
-    expected = ['165\xa0000 $' ,'*** error', None]
+    expected = ['165\xa0000 $' , NOT_FOUND, None]
     actual   = get_total_price(soup)
     assert  actual in expected
 
 def test_get_rooms(get_lun_page):
     soup = bs(get_lun_page, features='html.parser')
     
-    expected = ['1 комната' ,'*** error', None]
+    expected = ['1 комната' , NOT_FOUND, None]
     actual   = get_rooms(soup)
     assert  actual in expected
 
@@ -81,34 +83,43 @@ def test_get_price_per_m(get_lun_page):
 def test_get_level(get_lun_page):
     soup = bs(get_lun_page, features='html.parser')
     
-    expected = ['2 из 9' ,'*** error', None]
+    expected = ['2 из 9' ,NOT_FOUND, None]
     actual   = get_level(soup)
     assert  actual in expected
 
 def test_get_area(get_lun_page):
     soup = bs(get_lun_page, features='html.parser')
     
-    expected = ['49 / 20 / 18 м²' ,'*** error', None]
+    expected = ['49 / 20 / 18 м²' ,NOT_FOUND, None]
     actual   = get_area(soup)
     assert  actual in expected
 
 def test_get_year(get_lun_page):
     soup = bs(get_lun_page, features='html.parser')
     
-    expected = ['2013' , None]
+    expected = ['2013' ,  NOT_FOUND, None]
     actual   = 'год постройки' + get_year(soup)
     assert  actual in expected
 
 def test_get_type(get_lun_page):
     soup = bs(get_lun_page, features='html.parser')
     
-    expected = ['утепленная панель', None]
+    expected = ['утепленная панель',  NOT_FOUND, None]
     actual   = get_type(soup)
     assert  actual in expected
 
 def test_get_address(get_lun_page):
     soup = bs(get_lun_page, features='html.parser')
     
-    expected = ['ул. Златоустовская' ,'*** error', None]
+    expected = ['ул. Златоустовская' ,NOT_FOUND, None]
     actual   = get_address(soup)
     assert  actual in expected
+    
+def test_get_publish_data(get_lun_page):
+    soup = bs(get_lun_page, features='html.parser')
+    
+    expected = ['28 октября 2020\xa0г.', NOT_FOUND, None]
+    actual = get_publish_date(soup)
+    # assert actual in expected
+    assert actual == expected[0]
+

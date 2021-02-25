@@ -7,6 +7,7 @@ from extract_numbers import \
     get_level, \
     get_year, \
     _get_area_property
+    
 
     
 @pytest.fixture
@@ -53,3 +54,6 @@ def test_get_area_property(lun_data):
     expected = [(73.0, 37.0, 15.0), None]
     actual = _get_area_property(lun_data, 6)
     assert actual in expected
+    
+    
+    

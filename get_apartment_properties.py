@@ -1,7 +1,15 @@
-LUN_URL = 'https://flatfy.lun.ua/продажа-квартир-киев'
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Date    : 2021-02-25 22:42:04
+# @Author  : Serhii Shkliarskiy 
+# @Version : 1.0.0
 
-import requests
-import re
+LUN_URL = 'https://flatfy.lun.ua/продажа-квартир-киев'
+RAW_DATA_FILE = 'aprts_data.csv'
+NOT_FOUND = '*** not found'
+
+# import requests
+# import re
 from typing import Union, Dict, List
 from bs4 import BeautifulSoup as bs
 from selenium import webdriver
@@ -90,7 +98,7 @@ def get_total_price(soup: bs) -> Union[str, None]:
     try:
         total_price = soup.find('div', class_='realty-preview__price').text
     except:
-        return '*** not found '
+        return NOT_FOUND
     
     return total_price 
 
@@ -101,7 +109,7 @@ def get_rooms(soup: bs) -> Union[str, None]:
     try:
         rooms = soup.find('span', class_='realty-preview__info rooms').text
     except:
-        return '*** not found '
+        return NOT_FOUND
     
     return rooms 
 
@@ -112,7 +120,7 @@ def get_price_per_m(soup:bs) -> Union[str, None]:
     try:
         price_per_m: str = soup.find('div', class_='realty-preview__price--sqm').text
     except:
-        return '*** not found '
+        return NOT_FOUND
     
     return price_per_m 
 
@@ -121,7 +129,7 @@ def get_level(soup:bs) -> Union[str, None]:
     try: 
         level = soup.find('span', text='этаж').next_sibling
     except: 
-        return '*** not found '
+        return NOT_FOUND
     
     return level
 
@@ -131,7 +139,7 @@ def get_year(soup:bs) -> Union[str, None]:
     try: 
         year = soup.find_all(class_='realty-content-layout__properties-row')[2].find_all(class_='realty-preview__info')[1].text
     except: 
-        return '*** not found '
+        return NOT_FOUND
     
     return year
 
@@ -141,7 +149,7 @@ def get_type(soup: bs) -> Union[str, None]:
     try: 
         type = list(soup.find_all(class_='realty-content-layout__properties-row')[3].find_all(class_='realty-preview__info')[1].children)[1]
     except: 
-        return '*** not found '
+        return NOT_FOUND
     
     return type
 
@@ -151,7 +159,7 @@ def get_area(soup:bs) -> Union[str, None]:
     try: 
         area = soup.find('span', class_='realty-preview__info area').text
     except: 
-        return '*** not found '
+        return NOT_FOUND
     
     return area
 
@@ -161,11 +169,29 @@ def get_address(soup:bs) -> Union[str, None]:
     try: 
         area = soup.find('a', class_='realty-preview__title-link').text
     except: 
-        return '*** not found '
+        return NOT_FOUND
     
     return area
 
+def get_publish_date(soup: bs) -> Union[str, None]:
+    """возвращает дату публикации 
+    """
     
+    try: 
+        # получить список soup всех дат (..--time)
+        date_list = soup.find_all('span', class_='realty-preview__info realty-preview__info--time')
+    except:
+        return NOT_FOUND
+    
+    # выделить дату публикации
+    if len(date_list) == 2:
+        # дата публикации д/б 2-й в списке
+        publish_date = date_list[1].find('span').text
+    else:
+        publish_date = NOT_FOUND
+    
+    return publish_date
+       
 
 def main():
     
@@ -186,7 +212,7 @@ def main():
     
     # total_pages = 0
     # проход по всем страницам
-    for page in range(0,30):
+    for page in range(0,2):
     # for page in range(int(total_pages) + 1):
         
         # формируем url страницы
@@ -202,14 +228,14 @@ def main():
             continue
         
         # проход по списку квартир и формирование строки выходного файла
-        with open('aprts_data.csv', 'a+') as file:
+        with open(RAW_DATA_FILE, 'w') as file:
             for aprt in aprt_soup_list:
                 line =  f'{get_total_price(aprt)},{get_rooms(aprt)},{get_price_per_m(aprt)},'
-                line += f'{get_level(aprt)},{get_year(aprt)},{get_type(aprt)},{get_area(aprt)},{get_address(aprt)}'
+                line += f'{get_level(aprt)},{get_year(aprt)},{get_type(aprt)},'
+                line += f'{get_area(aprt)},{get_address(aprt)},{get_publish_date(aprt)}'
                 print(line)
                 file.write(line+'\n')
         
 
 if __name__ == '__main__':
-    
     main()

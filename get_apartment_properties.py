@@ -4,6 +4,9 @@
 # @Author  : Serhii Shkliarskiy 
 # @Version : 1.1.0
 
+from clean_properties import OUTPUT_FILE
+
+
 LUN_URL = 'https://flatfy.lun.ua/uk/search?geo_id=1&section_id=1'
 # LUN_URL = 'https://flatfy.lun.ua/продажа-квартир-киев'
 RAW_DATA_FILE = 'aprts_data_ukr.csv'
@@ -202,11 +205,11 @@ def main():
     
     # total_pages = 0
     # проход по всем страницам
-    for page in range(0,2):
+    for page in range(0,30):
     # for page in range(int(total_pages) + 1):
         
         # формируем url страницы
-        url = f'{LUN_URL}?page={str(page)}'
+        url = f'{LUN_URL}&page={str(page)}'
         html = get_lun_html(url)
         
         # получить с текущей страницы soup всех описаний квартир
@@ -218,7 +221,7 @@ def main():
             continue
         
         # проход по списку квартир и формирование строки выходного файла
-        with open(RAW_DATA_FILE, 'w') as file:
+        with open(RAW_DATA_FILE, 'a') as file:
             for aprt in aprt_soup_list:
                 line =  f'{get_total_price(aprt)},{get_rooms(aprt)},{get_price_per_m(aprt)},'
                 line += f'{get_level(aprt)},{get_year(aprt)},{get_type(aprt)},'

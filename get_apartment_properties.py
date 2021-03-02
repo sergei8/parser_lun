@@ -4,9 +4,11 @@
 # @Author  : Serhii Shkliarskiy 
 # @Version : 1.1.0
 
-LUN_URL = 'https://flatfy.lun.ua/продажа-квартир-киев'
-RAW_DATA_FILE = 'aprts_data.csv'
+LUN_URL = 'https://flatfy.lun.ua/uk/search?geo_id=1&section_id=1'
+# LUN_URL = 'https://flatfy.lun.ua/продажа-квартир-киев'
+RAW_DATA_FILE = 'aprts_data_ukr.csv'
 NOT_FOUND = '*** not found'
+LEVEL_NAME = 'поверх'
 
 # import requests
 # import re
@@ -66,13 +68,7 @@ def get_total_page(html: str) -> Union[str, None]:
 
 def find_all_aprts(html: str) -> Union[List[bs], None]:
     """Выбирает с страницы список bs-элементов с классом 'realty-content-layout'
-    в которых находиятся описания квартир
-
-    Args:
-        html (str): [страница]
-
-    Returns:
-        Union[List[bs], None]: [список элементов квартир]
+       в которых находиятся описания квартир
     """
     
     try:
@@ -87,12 +83,6 @@ def find_all_aprts(html: str) -> Union[List[bs], None]:
 
 def get_total_price(soup: bs) -> Union[str, None]:
     """возвращает цену квартиры как она представлена в bs-элементе
-
-    Args:
-        soup (bs): [елемент квартиры]
-
-    Returns:
-        Union[str, None]: [цена]
     """
     
     try:
@@ -127,7 +117,7 @@ def get_price_per_m(soup:bs) -> Union[str, None]:
 def get_level(soup:bs) -> Union[str, None]:
     
     try: 
-        level = soup.find('span', text='этаж').next_sibling
+        level = soup.find('span', text=LEVEL_NAME).next_sibling
     except: 
         return NOT_FOUND
     

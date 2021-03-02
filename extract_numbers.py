@@ -22,7 +22,8 @@ COURSE = 28.0
 NOT_FOUND = '*** not found'
 DOLLAR = '$'
 HRIVNA = 'грн'
-YEAR_OF_BUILD = 'год постройки'
+YEAR_OF_BUILD = 'рік будівництва'
+# YEAR_OF_BUILD = 'год постройки'
 
 def _get_row_property(line: str, index: int) -> Union[str, None]:
     """выделяет из csv-строки эл-т index порядковый номер эл-та
@@ -57,7 +58,7 @@ def _get_level_property(line: str, index: int) -> Union[Tuple[Optional[int], Opt
     
     # выполнить преобразования
     try:
-        level_str, total_levels_str = levels.split('из')
+        level_str, total_levels_str = levels.split('з')
     except:
         return None
     
@@ -140,7 +141,7 @@ def get_total_price(line: str) -> Union[float, None]:
         
     return round(price_number,1)
     
-def get_romms(line: str) -> Union[int, None]: 
+def get_rooms(line: str) -> Union[int, None]: 
     """возвращает общее число комнат в квартире
     """
     
@@ -169,8 +170,10 @@ def get_price_sqm(line: str) -> Union[float, None]:
     
     # формируем цену в зависимости от валюты
     if DOLLAR in price_sqm_list:
+        ind = price_sqm_list.index(DOLLAR)
+        price_sqm_dlr = ''.join(price_sqm_list[:ind])
         try:
-            price_sqm = float(price_sqm_list[0])
+            price_sqm = float(price_sqm_dlr)
         except:
             return None
     elif HRIVNA in price_sqm_list:
@@ -218,10 +221,35 @@ def get_year(line: str) -> Union[int, None]:
     
     return year
     
-
+def get_street_name(line: str) -> str:
+    """возвращает название улицы
+    """
+    
+    # получим нераспарсеное поле с адресом
+    street_row = _get_row_property(line, 7)
+    if street_row is None:
+        return NOT_FOUND
+    
+    # выделить актуальное название из [0] эл-та (отсечь старое в скобках)
+    real_street_name = street_row.split('(')[0]
+    
+    # если это "провулок"  или "наб." то назва находітся в 0 эл-те
+    if any([x in ['пров.', 'наб.'] for x in real_street_name.split()]):
+        street_name_list = real_street_name.split(' ')
+        return street_name_list[0].strip()
+    
+    # отделить тип улицы от названия (тип - это "вул.", "просп." и т.д.)
+    splitted_real_street_name = real_street_name.split('.')
+    if len(splitted_real_street_name) == 2:
+        street_name = splitted_real_street_name[1].strip()
+    else:
+        street_name = NOT_FOUND
+    
+    return street_name
+    
 def main():
     
-    with open('aprts_data.csv')        as input_file, \
+    with open('aprts_data_ukr.csv')        as input_file, \
          open('numeric_data.csv', 'w') as output_file:
         
         # читать исходный файл данных построчно
@@ -231,7 +259,7 @@ def main():
             total_price = get_total_price(line)
             
             # вибрать чісло комнат
-            total_rooms = get_romms(line)
+            total_rooms = get_rooms(line)
             
             # выбрать цену за метр в $
             price_sqm = get_price_sqm(line)
@@ -248,8 +276,12 @@ def main():
             # выбрать площади из _get_area_property
             total_area, living_area, kitchen_area = _get_area_property(line, 6)
             
+            # вибрать название улицы 
+            street_name = get_street_name(line)
+            
+            
             output_line =  f'{total_price},{total_rooms},{price_sqm},{level},{total_levels},'
-            output_line += f'{year},{total_area},{living_area},{kitchen_area}'
+            output_line += f'{year},{total_area},{living_area},{kitchen_area}, {street_name}'
                 
             print(output_line)
             

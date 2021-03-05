@@ -251,6 +251,13 @@ def get_street_name(line: str) -> str:
     
     return street_name
     
+def get_publish_date(line: str) -> str:
+    publish_date = _get_row_property(line, 9)
+    if publish_date is None:
+        return NOT_FOUND
+    else:
+        return publish_date.strip('\n')
+     
 def main():
     
     with open(INPUT_FILE) as input_file, \
@@ -286,9 +293,13 @@ def main():
             # вибрать название улицы 
             street_name = get_street_name(line)
             
+            # выбрать дату публикации в сыром виде
+            publish_date = get_publish_date(line)
+            
             
             output_line =  f'{total_price},{total_rooms},{price_sqm},{level},{total_levels},'
-            output_line += f'{year},{total_area},{living_area},{kitchen_area}, {street_name}'
+            output_line += f'{year},{total_area},{living_area},{kitchen_area}, {street_name},'
+            output_line += f'{publish_date}'
                 
             print(output_line)
             
